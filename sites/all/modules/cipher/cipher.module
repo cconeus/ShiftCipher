@@ -39,6 +39,47 @@
     return $form;
   }
 
+  function element_validate_direction($element) {
+    $info = strtolower($element['#value']);
+  }
+
+  function element_validate_characters($element) {
+    if(preg_match_all('/[A-Za-z!.?,; ]/', $element['#value']) {
+      form_error($element, t('Sorry, the character you entered was obscene. Please refrain from doing such things.'))
+    })
+  }
+
   function cipher_form_submit($form, &$form_state) {
+    $shift_value = $form_state['values']['shift_value'];
+    $shift_direction = $form_state['values']['shift_direction'];
+    $shift_phrase = $form_state['values']['shift_phrase'];
+
+    $exp_phrase = str_split($shift_phrase);
+
+    $i = 0;
+    foreach($exp_phrase as $letter) {
+      if(preg_match('/[A-Za-z]/', $letter)) {
+        $ascii_code = ord($letter);
+
+        if($ascii_code >= 97 && $ascii_code <= 122) {
+          $new_ascii = $ascii_code + $shift_value;
+
+          if($new_ascii < 97) {
+            $recall = $new_ascii - 97;
+            $new_ascii = 123 + $recall;
+          }
+
+          if($new_ascii > 122) {
+            $recall = $new_ascii - 122;
+            $new_ascii = 96 + $recall;
+          }
+
+        if($ascii_code >= 65 && $ascii_code <= 90) {
+          $new_ascii = $ascii_code + $shift_value;
+        }
+        }
+      }
+    }
+
     $form_state['redirect'] = 'cipher_success_page';
   }
