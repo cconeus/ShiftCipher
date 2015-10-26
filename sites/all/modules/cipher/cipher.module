@@ -9,6 +9,13 @@
       'access callback' => TRUE,
       'type' => MENU_NORMAL_ITEM,
     );
+
+    $items['cipher_success_page'] = array(
+      'title' => 'Success',
+      'page callback' => 'cipher_success',
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+    );
     return $items;
   }
 
@@ -39,22 +46,34 @@
     return $form;
   }
 
-  function element_validate_direction($element) {
-    $info = strtolower($element['#value']);
-  }
-
-  function element_validate_characters($element) {
-    if(preg_match_all('/[A-Za-z!.?,; ]/', $element['#value']) {
-      form_error($element, t('Sorry, the character you entered was obscene. Please refrain from doing such things.'))
-    })
-  }
+  // function element_validate_direction($element) {
+  //   $info = strtolower($element['#value']);
+  //   var_dump($info);
+  //   if(!in_array($info, array('left', 'right'))) {
+  //     form_error($element, t('Please enter left or right'));
+  //   }
+  // }
+  //
+  // function element_validate_characters($element) {
+  //   if(preg_match_all('/[A-Za-z!.?,; ]/', $element['#value']) {
+  //     form_error($element, t('Sorry, the character you entered was obscene. Please refrain from doing such things.'));
+  //   });
+  // }
 
   function cipher_form_submit($form, &$form_state) {
     $shift_value = $form_state['values']['shift_value'];
     $shift_direction = $form_state['values']['shift_direction'];
     $shift_phrase = $form_state['values']['shift_phrase'];
 
+    $shift_value_scrub = abs(filter_var($shift_value, FILTER_SANITIZE_NUMBER_INT));
+    $shift_direction_scrub = strtolower($shift_direction);
+
     $exp_phrase = str_split($shift_phrase);
+    var_dump($exp_phrase);
+    //
+    if($shift_direction_scrub == 'left') {
+      $shift_value = $shift_value_scrub * -1;
+    }
 
     $i = 0;
     foreach($exp_phrase as $letter) {
@@ -73,13 +92,35 @@
             $recall = $new_ascii - 122;
             $new_ascii = 96 + $recall;
           }
+        }
 
         if($ascii_code >= 65 && $ascii_code <= 90) {
           $new_ascii = $ascii_code + $shift_value;
-        }
+
+          if($new_ascii < 65) {
+            $recall = $new_ascii - 65;
+            $new_ascii = 91 + $recall;
+          }
+
+          if($new_ascii > 90) {
+            $recall = $new_ascii - 90;
+            $new_ascii = 91 + $recall;
+          }
+
+        $exp_phrase[$i] = chr($new_ascii);
         }
       }
+        else {
+          $i++;
+        }
+      }
+
+      $new_phrase = implode($exp_phrase);
+      $_SESSION['output'] = $new_phrase;
+      $form_state['redirect'] = 'cipher_success_page';
     }
 
-    $form_state['redirect'] = 'cipher_success_page';
-  }
+    function cipher_success() {
+      $new_phrase = $_SESSION['output'];
+      return $new_phrase;
+    }
