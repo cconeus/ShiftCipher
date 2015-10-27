@@ -24,18 +24,24 @@
       '#title' => 'Shift value',
       '#type' => 'textfield',
       '#description' => t('Enter Shift Value here'),
+      '#element_validate' => array('element_validate_integer_positive', 'element_validate_range'),
+      '#required' => TRUE,
     );
 
     $form['shift_direction'] = array(
       '#title' => 'Shift direction',
       '#type' => 'textfield',
       '#description' => t('Enter the direction you\'d like to shift in.'),
+      '#element_validate' => array('element_validate_direction'),
+      '#required' => TRUE,
     );
 
     $form['shift_phrase'] = array(
       '#title' => 'Shift phrase',
       '#type' => 'textfield',
       '#description' => t('Enter the phrase you\'d like shifted.'),
+      '#element_validate' => array('element_validate_characters'),
+      '#required' => TRUE,
     );
 
     $form['submit'] = array(
@@ -46,19 +52,24 @@
     return $form;
   }
 
-  // function element_validate_direction($element) {
-  //   $info = strtolower($element['#value']);
-  //   var_dump($info);
-  //   if(!in_array($info, array('left', 'right'))) {
-  //     form_error($element, t('Please enter left or right'));
-  //   }
-  // }
-  //
-  // function element_validate_characters($element) {
-  //   if(preg_match_all('/[A-Za-z!.?,; ]/', $element['#value']) {
-  //     form_error($element, t('Sorry, the character you entered was obscene. Please refrain from doing such things.'));
-  //   });
-  // }
+  function element_validate_direction($element) {
+    $info = strtolower($element['#value']);
+    if(!in_array($info, array('left', 'right'))) {
+      form_error($element, t('Please enter left or right'));
+    }
+  }
+
+  function element_validate_characters($element) {
+    if(!preg_match('/[A-Za-z!.?, ]/', $element['#value'])) {
+      form_error($element, t('Your phrase rates at a 10 out of 10 on the weakness scale. Please refrain from using special characters. Letters and basic punctuation only please!'));
+    }
+  }
+
+  function element_validate_range($element) {
+    if ($element['#value'] > 25 || $element['#value'] < 1) {
+      form_error($element, t('Number must be between 1-25. Wouldn\'t make much sense to do negative right shifts, or positive left shifts now would it.'));
+    }
+  }
 
   function cipher_form_submit($form, &$form_state) {
     $shift_value = $form_state['values']['shift_value'];
@@ -69,8 +80,7 @@
     $shift_direction_scrub = strtolower($shift_direction);
 
     $exp_phrase = str_split($shift_phrase);
-    var_dump($exp_phrase);
-    //
+
     if($shift_direction_scrub == 'left') {
       $shift_value = $shift_value_scrub * -1;
     }
