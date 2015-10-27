@@ -55,7 +55,7 @@
   function element_validate_direction($element) {
     $info = strtolower($element['#value']);
     if(!in_array($info, array('left', 'right'))) {
-      form_error($element, t('Please enter left or right'));
+      form_error($element, t('Please enter left or right for your shift direction.'));
     }
   }
 
@@ -75,23 +75,23 @@
     $shift_value = $form_state['values']['shift_value'];
     $shift_direction = $form_state['values']['shift_direction'];
     $shift_phrase = $form_state['values']['shift_phrase'];
-
-    $shift_value_scrub = abs(filter_var($shift_value, FILTER_SANITIZE_NUMBER_INT));
+    dpr($shift_phrase, $return = FALSE, $name = NULL);
     $shift_direction_scrub = strtolower($shift_direction);
 
     $exp_phrase = str_split($shift_phrase);
 
     if($shift_direction_scrub == 'left') {
-      $shift_value = $shift_value_scrub * -1;
+      $shift_value = $shift_value * -1;
     }
 
     $i = 0;
     foreach($exp_phrase as $letter) {
+      $code = ord($letter);
       if(preg_match('/[A-Za-z]/', $letter)) {
-        $ascii_code = ord($letter);
 
-        if($ascii_code >= 97 && $ascii_code <= 122) {
-          $new_ascii = $ascii_code + $shift_value;
+
+        if($code >= 97 && $code <= 122) {
+          $new_ascii = $code + $shift_value;
 
           if($new_ascii < 97) {
             $recall = $new_ascii - 97;
@@ -104,8 +104,8 @@
           }
         }
 
-        if($ascii_code >= 65 && $ascii_code <= 90) {
-          $new_ascii = $ascii_code + $shift_value;
+        if($code >= 65 && $code <= 90) {
+          $new_ascii = $code + $shift_value;
 
           if($new_ascii < 65) {
             $recall = $new_ascii - 65;
